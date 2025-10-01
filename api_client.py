@@ -1,5 +1,6 @@
 import enum
 import time
+import typing
 import urllib.parse
 
 import requests
@@ -32,7 +33,7 @@ class APIClient:
 	def get_channels(self, guild_id):
 		return self.request('/guilds/%s/channels' % guild_id)
 
-	def iter_messages(self, channel_id, after_id):
+	def iter_messages(self, channel_id, after_id) -> typing.Iterator[dict]:
 		while True:
 			messages = self.request('/channels/%s/messages' % channel_id,
 					params={'after': after_id, 'limit': 100})
@@ -65,7 +66,7 @@ class APIClient:
 		self.request('/guilds/%s/members/%s' % (guild_id, user_id), method='DELETE')
 
 class Channel:
-	def __init__(self, channel_id, channel_name, guild_id, guild_name):
+	def __init__(self, channel_id: str, channel_name: str, guild_id: str, guild_name: str):
 		self.id = channel_id
 		self.name = channel_name
 		self.guild_id = guild_id

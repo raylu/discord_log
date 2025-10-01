@@ -2,7 +2,7 @@
 
 import errno
 import os
-from os import path
+import pathlib
 
 import requests
 
@@ -11,7 +11,6 @@ import channel_log
 import config
 import log
 import metadata
-from metadata import sanitize_name
 
 def main():
 	client = api_client.APIClient()
@@ -32,19 +31,16 @@ def main():
 	channel_log.flush()
 	metadata.write(guilds, channels, users)
 
-def get_history(channel, users):
-	channel_path = path.join(sanitize_name(channel.guild_name), sanitize_name(channel.name))
-	abspath = path.join(config.log_dir, channel_path)
+def get_history(channel: api_client.Channel, users: dict):
+	channel_path = pathlib.Path(channel.guild_id, channel.id)
+	abspath = pathlib.Path(config.log_dir, channel_path)
 	log.write('getting history for', channel_path)
 	last_message_id = 0
 	try:
-		os.makedirs(abspath)
-	except OSError as e:
-		if e.errno != errno.EEXIST:
-			raise
-		log_files = os.listdir(abspath)
-		if log_files:
-			last_message_id = channel_log.last_message_id(path.join(abspath, max(log_files)))
+		abspath.mkdir(parents=True)
+	except FileExistsError:
+		if log_files := list(abspath.iterdir()):
+			last_message_id = channel_log.last_message_id(abspath / max(log_files))
 			log.write('continuing from', last_message_id)
 
 	client = api_client.APIClient()

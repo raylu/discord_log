@@ -48,6 +48,3 @@ def write(new_guilds, new_channels, new_users):
 def _write_line(f, *args):
 	encoded = map(lambda arg: arg.encode('utf-8'), args)
 	f.write(b'|'.join(encoded) + b'\n')
-
-def sanitize_name(name):
-	return name.replace('/', '_')

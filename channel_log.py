@@ -1,14 +1,15 @@
+from __future__ import annotations
 import datetime
-from os import path
+import pathlib
 
 import lz4framed
 
 import config
 import log
 
-channel_logs = {}
+channel_logs: dict[pathlib.Path, ChannelLog] = {}
 
-def log_message(channel_path, message):
+def log_message(channel_path: pathlib.Path, message: dict) -> None:
 	try:
 		timestamp = datetime.datetime.strptime(message['timestamp'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
 	except ValueError:
@@ -45,14 +46,14 @@ def _parse(abspath):
 	return lmi, contents
 
 class ChannelLog:
-	def __init__(self, channel_path, date):
-		abspath = path.join(config.log_dir, channel_path, date.strftime('%Y-%m-%d')) + '.lz4'
+	def __init__(self, channel_path: pathlib.Path, date: datetime.date):
+		abspath = pathlib.Path(config.log_dir, channel_path, date.strftime('%Y-%m-%d') + '.lz4')
 		try:
-			self.file = open(abspath, 'xb')
+			self.file = abspath.open('xb')
 			contents = None
 		except FileExistsError:
 			_, contents = _parse(abspath)
-			self.file = open(abspath, 'wb')
+			self.file = abspath.open('wb')
 		self.compressor = lz4framed.Compressor(self.file)
 		if contents is not None:
 			self.compressor.update(contents)
