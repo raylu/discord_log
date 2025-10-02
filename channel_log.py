@@ -26,7 +26,8 @@ def log_message(channel_path: pathlib.Path, message: dict) -> None:
 		cl = ChannelLog(channel_path, date)
 		channel_logs[channel_path] = cl
 
-	cl.log(message['id'], timestamp.strftime('%H:%M:%S'), message['author']['id'], message['content'])
+	content = message['content'].replace('\x00', '\ufffd') # replace null bytes with replacement characters
+	cl.log(message['id'], timestamp.strftime('%H:%M:%S'), message['author']['id'], content)
 
 def flush():
 	for cl in channel_logs.values():
